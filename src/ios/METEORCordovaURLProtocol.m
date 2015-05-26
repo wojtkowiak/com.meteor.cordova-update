@@ -2,6 +2,7 @@
 
 NSString *METEORDocumentRoot;
 NSString *METEORCordovajsRoot;
+NSString *AdditionalDataRoot;
 
 NSDictionary *MimeTypeMappings = nil;
 
@@ -42,6 +43,7 @@ NSDictionary *MimeTypeMappings = nil;
   // XXX HACKHACK if the file not found, return the root page
   if (!filePath || ![[NSFileManager defaultManager] fileExistsAtPath:filePath isDirectory:&isDir] || isDir)
   {
+      NSLog(@"Nie znalazlem :(");
     filePath = [self filePathForURI:@"/" allowDirectory:NO];
   }
 
@@ -93,17 +95,30 @@ NSDictionary *MimeTypeMappings = nil;
 **/
 - (NSString *)filePathForURI:(NSString *)path allowDirectory:(BOOL)allowDirectory
 {
-  NSString *documentRoot = METEORDocumentRoot;
+
+    
+     NSLog(@"dupaPath: %@", [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
+   
+    NSString *documentRoot;
+    if([AdditionalDataRoot length] != 0 && [[path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] hasPrefix:@"/data"]) {
+        documentRoot = AdditionalDataRoot;
+    } else {
+        documentRoot = METEORDocumentRoot;
+    }
+    
+    NSLog(@"documentRoot: %@", documentRoot);
   // Part 1: Strip parameters from the url
   // E.g.: /page.html?q=22&var=abc -> /page.html
 
   NSURL *docRoot = [NSURL fileURLWithPath:documentRoot isDirectory:YES];
+    NSLog(@"docRoot: %@", [docRoot absoluteString]);
   if (docRoot == nil)
   {
     return nil;
   }
 
   NSString *relativePath = [[NSURL URLWithString:path relativeToURL:docRoot] relativePath];
+   NSLog(@"relativePath: %@", relativePath);
 
   // Part 2: Append relative path to document root (base path)
   // E.g.: relativePath="/images/icon.png"
@@ -118,6 +133,8 @@ NSDictionary *MimeTypeMappings = nil;
   {
     fullPath = [fullPath stringByAppendingString:@"/"];
   }
+    
+    NSLog(@"fullPath: %@", fullPath);
 
   // Part 3: Prevent serving files outside the document root.
   // Sneaky requests may include ".." in the path.

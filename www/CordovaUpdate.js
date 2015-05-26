@@ -23,6 +23,10 @@ corhttpd_exports.setLocalPath = function (path, success, error) {
   exec(success, error, "CordovaUpdate", "setLocalPath", [path]);
 };
 
+corhttpd_exports.setAdditionalDataPath = function (path, success, error) {
+  exec(success, error, "CordovaUpdate", "setAdditionalDataPath", [path]);
+};
+
 corhttpd_exports.getCordovajsRoot = function (success, error) {
   exec(success, error, "CordovaUpdate", "getCordovajsRoot", []);
 };

@@ -8,6 +8,7 @@
 }
 
 - (void)startServer:(CDVInvokedUrlCommand*)command;
+- (void)setAdditionalDataPath:(CDVInvokedUrlCommand*)command;
 - (void)setLocalPath:(CDVInvokedUrlCommand*)command;
 
 
@@ -15,6 +16,7 @@
 
 extern NSString *METEORDocumentRoot;
 extern NSString *METEORCordovajsRoot;
+extern NSString *AdditionalDataRoot;
 extern NSDictionary *MimeTypeMappings;
 
 @implementation CordovaUpdate
@@ -722,6 +724,13 @@ MimeTypeMappings = @{
 {
   METEORDocumentRoot = [command.arguments objectAtIndex:0];
   [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+}
+
+- (void)setAdditionalDataPath:(CDVInvokedUrlCommand*)command
+{
+ /* NSFileManager fileExistsAtPath:isDirectory: */
+    AdditionalDataRoot = [command.arguments objectAtIndex:0];
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
 }
 
 - (void)getCordovajsRoot:(CDVInvokedUrlCommand*)command
