@@ -17,7 +17,8 @@
 extern NSString *METEORDocumentRoot;
 extern NSString *METEORCordovajsRoot;
 extern NSString *AdditionalDataRoot;
-extern NSDictionary *MimeTypeMappings;
+extern NSString *AdditionalDataUrlPrefix;
+extern NSMutableDictionary *MimeTypeMappings;
 
 @implementation CordovaUpdate
 
@@ -732,6 +733,29 @@ MimeTypeMappings = @{
     AdditionalDataRoot = [command.arguments objectAtIndex:0];
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
 }
+
+- (void)registerMimeType:(CDVInvokedUrlCommand*)command
+{
+    MimeTypeMappings
+    
+    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+}
+
+
+- (void)setAdditionalDataUrlPrefix:(CDVInvokedUrlCommand*)command
+{
+    NSString *prefix = command.arguments objectAtIndex:0];
+
+    NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
+    alphanumericSet = alphanumericSet.invertedSet;
+    NSRange range = [prefix rangeOfCharacterFromSet:alphanumericSet];
+    
+    if (range.location == NSNotFound && ![prefix isEqualToString:@"plugins"])
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+    else
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Prefix must be alphanumerical and different from 'plugins'."] callbackId:command.callbackId];
+}
+
 
 - (void)getCordovajsRoot:(CDVInvokedUrlCommand*)command
 {
