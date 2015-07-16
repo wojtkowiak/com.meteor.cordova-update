@@ -9,8 +9,9 @@
 
 - (void)startServer:(CDVInvokedUrlCommand*)command;
 - (void)setAdditionalDataPath:(CDVInvokedUrlCommand*)command;
+- (void)setAdditionalDataUrlPrefix:(CDVInvokedUrlCommand*)command;
 - (void)setLocalPath:(CDVInvokedUrlCommand*)command;
-
+- (void)registerMimeType:(CDVInvokedUrlCommand*)command;
 
 @end
 
@@ -24,7 +25,8 @@ extern NSMutableDictionary *MimeTypeMappings;
 
 - (void)pluginInitialize
 {
-MimeTypeMappings = @{
+  MimeTypeMappings = [[NSMutableDictionary alloc] initWithDictionary:@{
+                                         
   @"123": @"application/vnd.lotus-1-2-3",
   @"x3d": @"application/vnd.hzn-3d-crossword",
   @"3gp": @"video/3gpp",
@@ -705,8 +707,10 @@ MimeTypeMappings = @{
   @"zir": @"application/vnd.zul",
   @"zip": @"application/zip",
   @"zmm": @"application/vnd.handheld-entertainment+xml",
-  @"zaz": @"application/vnd.zzazz.deck+xml"
-};
+  @"zaz": @"application/vnd.zzazz.deck+xml"} copyItems:NO];
+    
+  AdditionalDataUrlPrefix = @"/data";
+
 
 }
 
@@ -729,31 +733,50 @@ MimeTypeMappings = @{
 
 - (void)setAdditionalDataPath:(CDVInvokedUrlCommand*)command
 {
- /* NSFileManager fileExistsAtPath:isDirectory: */
-    AdditionalDataRoot = [command.arguments objectAtIndex:0];
-    [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+    BOOL isDirectory = NO;
+    [[NSFileManager defaultManager] fileExistsAtPath:[command.arguments objectAtIndex:0] isDirectory:&isDirectory];
+    if(!isDirectory){
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Provided path does not exists."] callbackId:command.callbackId];
+    } else {
+      AdditionalDataRoot = [command.arguments objectAtIndex:0];
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+    }
 }
 
 - (void)registerMimeType:(CDVInvokedUrlCommand*)command
 {
-    MimeTypeMappings
+    NSString *mimeName = [command.arguments objectAtIndex:0];
+    if ([mimeName length] == 0) {
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Empty mime name."] callbackId:command.callbackId];
+        return;
+    }
+    NSString *mimeTemplate = [command.arguments objectAtIndex:1];
+    if ([mimeTemplate length] == 0 || ![mimeTemplate containsString:@"/"]) {
+        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Invalid mime template name."] callbackId:command.callbackId];
+        return;
+    }
     
+    MimeTypeMappings[mimeName] = mimeTemplate;
+
     [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
 }
 
 
 - (void)setAdditionalDataUrlPrefix:(CDVInvokedUrlCommand*)command
 {
-    NSString *prefix = command.arguments objectAtIndex:0];
+    NSString *prefix = [command.arguments objectAtIndex:0];
 
     NSCharacterSet *alphanumericSet = [NSCharacterSet alphanumericCharacterSet];
     alphanumericSet = alphanumericSet.invertedSet;
     NSRange range = [prefix rangeOfCharacterFromSet:alphanumericSet];
     
     if (range.location == NSNotFound && ![prefix isEqualToString:@"plugins"])
-        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+    {
+        AdditionalDataUrlPrefix = [NSString stringWithFormat:@"/%@", prefix];
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:nil] callbackId:command.callbackId];
+    }
     else
-        [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Prefix must be alphanumerical and different from 'plugins'."] callbackId:command.callbackId];
+      [self.commandDelegate sendPluginResult:[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Prefix must be alphanumerical and different from 'plugins'."] callbackId:command.callbackId];
 }
 
 

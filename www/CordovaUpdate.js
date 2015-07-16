@@ -31,6 +31,10 @@ corhttpd_exports.setAdditionalDataUrlPefix = function (prefix, success, error) {
   exec(success, error, "CordovaUpdate", "setAdditionalDataUrlPrefix", [prefix]);
 };
 
+corhttpd_exports.registerMimeType = function (mimeName, mimeTemplateName, success, error) {
+  exec(success, error, "CordovaUpdate", "registerMimeType", [mimeName, mimeTemplateName]);
+};
+
 corhttpd_exports.getCordovajsRoot = function (success, error) {
   exec(success, error, "CordovaUpdate", "getCordovajsRoot", []);
 };

@@ -3,8 +3,9 @@
 NSString *METEORDocumentRoot;
 NSString *METEORCordovajsRoot;
 NSString *AdditionalDataRoot;
+NSString *AdditionalDataUrlPrefix;
 
-NSDictionary *MimeTypeMappings = nil;
+NSMutableDictionary *MimeTypeMappings = nil;
 
 @protocol METEORCordovaURLProtocol
 
@@ -100,7 +101,7 @@ NSDictionary *MimeTypeMappings = nil;
      NSLog(@"dupaPath: %@", [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
    
     NSString *documentRoot;
-    if([AdditionalDataRoot length] != 0 && [[path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] hasPrefix:@"/data"]) {
+    if([AdditionalDataRoot length] != 0 && [[path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] hasPrefix:AdditionalDataUrlPrefix]) {
         documentRoot = AdditionalDataRoot;
     } else {
         documentRoot = METEORDocumentRoot;
