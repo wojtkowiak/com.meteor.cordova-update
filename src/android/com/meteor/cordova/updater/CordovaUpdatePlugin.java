@@ -32,6 +32,8 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
 
     private String wwwRoot;
     private String cordovajsRoot;
+    private String additionalDataRoot;
+    private String additionalDataUrlPrefix;
 
     Asset assetRoot;
 
@@ -39,6 +41,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
         this.hosts.add(DEFAULT_HOST);
         this.schemes.add("http");
         this.schemes.add("https");
+        this.additionalDataUrlPrefix = "/data";
     }
 
     /**
@@ -125,6 +128,9 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
     private static final String ACTION_START_SERVER = "startServer";
     private static final String ACTION_SET_LOCAL_PATH = "setLocalPath";
     private static final String ACTION_GET_CORDOVAJSROOT = "getCordovajsRoot";
+    private static final String ACTION_SET_ADDITIONAL_DATA_PATH = "setAdditionalDataPath";
+    private static final String ACTION_SET_ADDITIONAL_DATA_URL_PREFIX = "setAdditionalDataUrlPrefix";
+    private static final String ACTION_REGISTER_MIME_TYPE = "registerMimeType";
 
     /**
      * Entry-point for JS calls from Cordova
@@ -145,6 +151,14 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
                 String wwwRoot = inputs.getString(0);
 
                 setLocalPath(wwwRoot, callbackContext);
+
+                callbackContext.success();
+                return true;
+            } else if (ACTION_SET_ADDITIONAL_DATA_PATH.equals(action)) {
+                String additionalDataRoot = inputs.getString(0);
+                // check if path exists
+
+                setAdditionalDataPath(additionalDataRoot, callbackContext);
 
                 callbackContext.success();
                 return true;
@@ -177,7 +191,19 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
     private void setLocalPath(String wwwRoot, CallbackContext callbackContext) {
         Log.w(TAG, "setLocalPath(" + wwwRoot + ")");
 
-        this.updateLocations(wwwRoot, this.cordovajsRoot);
+        this.updateLocations(wwwRoot, this.cordovajsRoot, this.additionalDataRoot);
+    }
+
+    /**
+     * JS-called function, called after a hot-code-push
+     *
+     * @param additionalDataRoot
+     * @param callbackContext
+     */
+    private void setAdditionalDataPath(String additionalDataRoot, CallbackContext callbackContext) {
+        Log.w(TAG, "setAdditionalDataRoot(" + additionalDataRoot + ")");
+
+        this.updateLocations(wwwRoot, this.cordovajsRoot, additionalDataRoot);
     }
 
     /**
@@ -186,7 +212,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
      * @param wwwRoot
      * @param cordovajsRoot
      */
-    private void updateLocations(String wwwRoot, String cordovajsRoot) {
+    private void updateLocations(String wwwRoot, String cordovajsRoot, String additionalDataRoot) {
         synchronized (this) {
             UriRemapper appRemapper = null;
 
@@ -247,6 +273,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
 
             this.wwwRoot = wwwRoot;
             this.cordovajsRoot = cordovajsRoot;
+            this.additionalDataRoot = additionalDataRoot;
             this.remappers = remappers;
         }
     }
@@ -286,7 +313,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
             throws JSONException {
         Log.w(TAG, "startServer(" + wwwRoot + "," + cordovaRoot + ")");
 
-        this.updateLocations(wwwRoot, cordovaRoot);
+        this.updateLocations(wwwRoot, cordovaRoot, null);
 
         return "http://" + DEFAULT_HOST;
     }

@@ -44,7 +44,6 @@ NSMutableDictionary *MimeTypeMappings = nil;
   // XXX HACKHACK if the file not found, return the root page
   if (!filePath || ![[NSFileManager defaultManager] fileExistsAtPath:filePath isDirectory:&isDir] || isDir)
   {
-      NSLog(@"Nie znalazlem :(");
     filePath = [self filePathForURI:@"/" allowDirectory:NO];
   }
 
@@ -96,30 +95,28 @@ NSMutableDictionary *MimeTypeMappings = nil;
 **/
 - (NSString *)filePathForURI:(NSString *)path allowDirectory:(BOOL)allowDirectory
 {
-
-    
-     NSLog(@"dupaPath: %@", [path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding]);
    
-    NSString *documentRoot;
-    if([AdditionalDataRoot length] != 0 && [[path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] hasPrefix:AdditionalDataUrlPrefix]) {
-        documentRoot = AdditionalDataRoot;
-    } else {
-        documentRoot = METEORDocumentRoot;
-    }
+  NSString *documentRoot;
+  if([AdditionalDataRoot length] != 0 && [[path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] hasPrefix:AdditionalDataUrlPrefix]) {
+    documentRoot = AdditionalDataRoot;
+  } else {
+    documentRoot = METEORDocumentRoot;
+  }
     
-    NSLog(@"documentRoot: %@", documentRoot);
   // Part 1: Strip parameters from the url
   // E.g.: /page.html?q=22&var=abc -> /page.html
 
   NSURL *docRoot = [NSURL fileURLWithPath:documentRoot isDirectory:YES];
-    NSLog(@"docRoot: %@", [docRoot absoluteString]);
+
   if (docRoot == nil)
   {
     return nil;
   }
 
   NSString *relativePath = [[NSURL URLWithString:path relativeToURL:docRoot] relativePath];
-   NSLog(@"relativePath: %@", relativePath);
+  
+  if ([documentRoot isEqual:AdditionalDataRoot])
+      relativePath = [relativePath substringFromIndex:[AdditionalDataUrlPrefix length]];
 
   // Part 2: Append relative path to document root (base path)
   // E.g.: relativePath="/images/icon.png"
@@ -135,8 +132,6 @@ NSMutableDictionary *MimeTypeMappings = nil;
     fullPath = [fullPath stringByAppendingString:@"/"];
   }
     
-    NSLog(@"fullPath: %@", fullPath);
-
   // Part 3: Prevent serving files outside the document root.
   // Sneaky requests may include ".." in the path.
   // E.g.: relativePath="../Documents/TopSecret.doc"
