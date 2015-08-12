@@ -27,7 +27,7 @@ corhttpd_exports.setAdditionalDataPath = function (path, success, error) {
   exec(success, error, "CordovaUpdate", "setAdditionalDataPath", [path]);
 };
 
-corhttpd_exports.setAdditionalDataUrlPefix = function (prefix, success, error) {
+corhttpd_exports.setAdditionalDataUrlPrefix = function (prefix, success, error) {
   exec(success, error, "CordovaUpdate", "setAdditionalDataUrlPrefix", [prefix]);
 };
 

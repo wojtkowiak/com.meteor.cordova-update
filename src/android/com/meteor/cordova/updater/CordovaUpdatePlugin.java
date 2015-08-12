@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -142,7 +143,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
                 String wwwRoot = inputs.getString(0);
                 String cordovaRoot = inputs.getString(1);
 
-                String result = startServer(wwwRoot, cordovaRoot, callbackContext);
+                String result = startServer(wwwRoot, cordovaRoot);
 
                 callbackContext.success(result);
 
@@ -150,20 +151,26 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
             } else if (ACTION_SET_LOCAL_PATH.equals(action)) {
                 String wwwRoot = inputs.getString(0);
 
-                setLocalPath(wwwRoot, callbackContext);
+                setLocalPath(wwwRoot);
 
                 callbackContext.success();
                 return true;
             } else if (ACTION_SET_ADDITIONAL_DATA_PATH.equals(action)) {
                 String additionalDataRoot = inputs.getString(0);
-                // check if path exists
 
                 setAdditionalDataPath(additionalDataRoot, callbackContext);
+                return true;
+            } else if (ACTION_SET_ADDITIONAL_DATA_URL_PREFIX.equals(action)) {
+                String additionalDataUrlPrefix = inputs.getString(0);
 
+                setAdditionalDataUrlPrefix(additionalDataUrlPrefix, callbackContext);
+                return true;
+            } else if (ACTION_REGISTER_MIME_TYPE.equals(action)) {
+                // not supported on Android so we will just return success
                 callbackContext.success();
                 return true;
             } else if (ACTION_GET_CORDOVAJSROOT.equals(action)) {
-                String result = getCordovajsRoot(callbackContext);
+                String result = getCordovajsRoot();
 
                 callbackContext.success(result);
 
@@ -186,16 +193,15 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
      * JS-called function, called after a hot-code-push
      * 
      * @param wwwRoot
-     * @param callbackContext
      */
-    private void setLocalPath(String wwwRoot, CallbackContext callbackContext) {
+    private void setLocalPath(String wwwRoot) {
         Log.w(TAG, "setLocalPath(" + wwwRoot + ")");
 
         this.updateLocations(wwwRoot, this.cordovajsRoot, this.additionalDataRoot);
     }
 
     /**
-     * JS-called function, called after a hot-code-push
+     * JS-called function, used for setting additional path for serving files stored by the app
      *
      * @param additionalDataRoot
      * @param callbackContext
@@ -203,7 +209,31 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
     private void setAdditionalDataPath(String additionalDataRoot, CallbackContext callbackContext) {
         Log.w(TAG, "setAdditionalDataRoot(" + additionalDataRoot + ")");
 
-        this.updateLocations(wwwRoot, this.cordovajsRoot, additionalDataRoot);
+        File file = new File(additionalDataRoot);
+        if(file.exists() && file.isDirectory()) {
+            this.updateLocations(this.wwwRoot, this.cordovajsRoot, additionalDataRoot);
+            callbackContext.success();
+        } else {
+            callbackContext.error("Provided path does not exists.");
+        }
+    }
+
+    /**
+     * JS-called function, sets up a url prefix that will be used for accessing files stored by the app
+     *
+     * @param additionalDataUrlPrefix
+     * @param callbackContext
+     */
+    private void setAdditionalDataUrlPrefix(String additionalDataUrlPrefix, CallbackContext callbackContext) {
+        Log.w(TAG, "setAdditionalDataUrlPrefix(" + additionalDataUrlPrefix + ")");
+
+        Pattern alphanumeric = Pattern.compile("[^a-zA-Z0-9]");
+        if (alphanumeric.matcher(additionalDataUrlPrefix).find() || additionalDataUrlPrefix.equals("plugins")) {
+            callbackContext.error("Prefix must be alphanumerical and different from 'plugins'.");
+        } else {
+            this.additionalDataUrlPrefix = additionalDataUrlPrefix;
+            callbackContext.success();
+        }
     }
 
     /**
@@ -294,10 +324,9 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
     /**
      * JS-called function, that returns cordovajsRoot as set previously
      * 
-     * @param callbackContext
      * @return
      */
-    private String getCordovajsRoot(CallbackContext callbackContext) {
+    private String getCordovajsRoot() {
         Log.w(TAG, "getCordovajsRoot");
 
         return this.cordovajsRoot;
@@ -305,11 +334,13 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
 
     /**
      * JS-called function, that starts the url interception
-     * 
-     * @param callbackContext
+     *
+     * @param wwwRoot
+     * @param cordovaRoot
      * @return
+     * @throws JSONException
      */
-    private String startServer(String wwwRoot, String cordovaRoot, CallbackContext callbackContext)
+    private String startServer(String wwwRoot, String cordovaRoot)
             throws JSONException {
         Log.w(TAG, "startServer(" + wwwRoot + "," + cordovaRoot + ")");
 
