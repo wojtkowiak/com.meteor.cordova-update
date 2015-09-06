@@ -34,7 +34,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
     private String wwwRoot;
     private String cordovajsRoot;
     private String additionalDataRoot;
-    private String additionalDataUrlPrefix;
+    private static String additionalDataUrlPrefix = "/data";
 
     Asset assetRoot;
 
@@ -42,7 +42,25 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
         this.hosts.add(DEFAULT_HOST);
         this.schemes.add("http");
         this.schemes.add("https");
-        this.additionalDataUrlPrefix = "/data";
+
+    }
+
+    /**
+     * Just a getter for additionalDataUrlPrefix;
+     *
+     * @return String
+     */
+    public static String getAdditionalDataUrlPrefix() {
+        return additionalDataUrlPrefix;
+    }
+
+    /**
+     * Just a setter for additionalDataUrlPrefix;
+     *
+     * @return String
+     */
+    public static void setAdditionalDataUrlPrefix(String prefix) {
+        additionalDataUrlPrefix = prefix;
     }
 
     /**
@@ -231,7 +249,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
         if (alphanumeric.matcher(additionalDataUrlPrefix).find() || additionalDataUrlPrefix.equals("plugins")) {
             callbackContext.error("Prefix must be alphanumerical and different from 'plugins'.");
         } else {
-            this.additionalDataUrlPrefix = additionalDataUrlPrefix;
+            CordovaUpdatePlugin.setAdditionalDataUrlPrefix("/" + additionalDataUrlPrefix);
             callbackContext.success();
         }
     }
@@ -246,7 +264,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
         synchronized (this) {
             UriRemapper appRemapper = null;
 
-            File fsRoot;
+            File fsRoot, fsAdditionalDataRoot;
             // XXX: This is very iOS specific
             if (wwwRoot.startsWith("../../Documents/meteor")) {
                 Context ctx = cordova.getActivity().getApplicationContext();
@@ -299,6 +317,13 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
 
             List<UriRemapper> remappers = new ArrayList<UriRemapper>();
             remappers.add(cordovaUriRemapper);
+            if (additionalDataRoot != null) {
+                fsAdditionalDataRoot = new File(additionalDataRoot);
+                if (fsAdditionalDataRoot.exists()) {
+                    Log.w(TAG, "Added remapper for additional data root: " + fsAdditionalDataRoot.getAbsolutePath());
+                    remappers.add(new AdditionalDataPathUriRemapper(fsAdditionalDataRoot));
+                }
+            }
             remappers.add(appRemapper);
 
             this.wwwRoot = wwwRoot;
