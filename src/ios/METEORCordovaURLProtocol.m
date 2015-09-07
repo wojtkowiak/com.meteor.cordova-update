@@ -2,8 +2,10 @@
 
 NSString *METEORDocumentRoot;
 NSString *METEORCordovajsRoot;
+NSString *AdditionalDataRoot;
+NSString *AdditionalDataUrlPrefix;
 
-NSDictionary *MimeTypeMappings = nil;
+NSMutableDictionary *MimeTypeMappings = nil;
 
 @protocol METEORCordovaURLProtocol
 
@@ -93,17 +95,28 @@ NSDictionary *MimeTypeMappings = nil;
 **/
 - (NSString *)filePathForURI:(NSString *)path allowDirectory:(BOOL)allowDirectory
 {
-  NSString *documentRoot = METEORDocumentRoot;
+   
+  NSString *documentRoot;
+  if([AdditionalDataRoot length] != 0 && [[path stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding] hasPrefix:AdditionalDataUrlPrefix]) {
+    documentRoot = AdditionalDataRoot;
+  } else {
+    documentRoot = METEORDocumentRoot;
+  }
+    
   // Part 1: Strip parameters from the url
   // E.g.: /page.html?q=22&var=abc -> /page.html
 
   NSURL *docRoot = [NSURL fileURLWithPath:documentRoot isDirectory:YES];
+
   if (docRoot == nil)
   {
     return nil;
   }
 
   NSString *relativePath = [[NSURL URLWithString:path relativeToURL:docRoot] relativePath];
+  
+  if ([documentRoot isEqual:AdditionalDataRoot])
+      relativePath = [relativePath substringFromIndex:[AdditionalDataUrlPrefix length]];
 
   // Part 2: Append relative path to document root (base path)
   // E.g.: relativePath="/images/icon.png"
@@ -118,7 +131,7 @@ NSDictionary *MimeTypeMappings = nil;
   {
     fullPath = [fullPath stringByAppendingString:@"/"];
   }
-
+    
   // Part 3: Prevent serving files outside the document root.
   // Sneaky requests may include ".." in the path.
   // E.g.: relativePath="../Documents/TopSecret.doc"

@@ -23,6 +23,18 @@ corhttpd_exports.setLocalPath = function (path, success, error) {
   exec(success, error, "CordovaUpdate", "setLocalPath", [path]);
 };
 
+corhttpd_exports.setAdditionalDataPath = function (path, success, error) {
+  exec(success, error, "CordovaUpdate", "setAdditionalDataPath", [path]);
+};
+
+corhttpd_exports.setAdditionalDataUrlPrefix = function (prefix, success, error) {
+  exec(success, error, "CordovaUpdate", "setAdditionalDataUrlPrefix", [prefix]);
+};
+
+corhttpd_exports.registerMimeType = function (mimeName, mimeTemplateName, success, error) {
+  exec(success, error, "CordovaUpdate", "registerMimeType", [mimeName, mimeTemplateName]);
+};
+
 corhttpd_exports.getCordovajsRoot = function (success, error) {
   exec(success, error, "CordovaUpdate", "getCordovajsRoot", []);
 };
