@@ -32,6 +32,7 @@
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     </config-file>
 
+    <source-file src="src/android/com/meteor/cordova/updater/AdditionalDataPathUriRemapper.java" target-dir="src/com/meteor/cordova/updater" />
     <source-file src="src/android/com/meteor/cordova/updater/Asset.java" target-dir="src/com/meteor/cordova/updater" />
     <source-file src="src/android/com/meteor/cordova/updater/CordovaUpdatePlugin.java" target-dir="src/com/meteor/cordova/updater" />
     <source-file src="src/android/com/meteor/cordova/updater/FilesystemUriRemapper.java" target-dir="src/com/meteor/cordova/updater" />
