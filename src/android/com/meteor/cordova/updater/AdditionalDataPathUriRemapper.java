@@ -5,10 +5,7 @@ import java.io.File;
 
 /**
  * UriRemapper that checks if the url starts with the additional data url prefix and then tries to
- * find the find in relative to additional data root.
- * 
- * @author meteor
- * 
+ * find the file in the additional data root that is set by the meteor app.
  */
 public class AdditionalDataPathUriRemapper extends FilesystemUriRemapper implements UriRemapper {
     private static final String TAG = "meteor.cordova.updater";

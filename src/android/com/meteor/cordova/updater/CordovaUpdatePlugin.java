@@ -67,6 +67,9 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
      * Overrides uri resolution.
      * 
      * Implements remapping, including adding default files (index.html) for directories
+     *
+     * @param uri
+     * @return
      */
     @Override
     public Uri remapUri(Uri uri) {
@@ -259,6 +262,7 @@ public class CordovaUpdatePlugin extends CordovaPlugin {
      * 
      * @param wwwRoot
      * @param cordovajsRoot
+     * @param additionalDataRoot
      */
     private void updateLocations(String wwwRoot, String cordovajsRoot, String additionalDataRoot) {
         synchronized (this) {
